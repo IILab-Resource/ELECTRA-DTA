@@ -77,8 +77,8 @@ for i in range(1,EMB_NO+1):
     else:
         embedding_no = i
 
-    protein_seqs_emb  = load_dict('/home/chunyu/DTADATA/embedding256-12layers/atomwise_BindingDB-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
-    smiles_seqs_emb = load_dict('/home/chunyu/DTADATA/embedding256-12layers/atomwise_BindingDB-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
+    protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_BindingDB-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
+    smiles_seqs_emb = load_dict('dataset/DTADATA/embedding256-12layers/atomwise_BindingDB-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
     all_protein_seqs_emb.append(protein_seqs_emb)
     all_smiles_seqs_emb.append(smiles_seqs_emb)
     
@@ -392,7 +392,7 @@ all_r = np.zeros((5,1))
 all_aupr = np.zeros((5,1))
 all_rm2 = np.zeros((5,1))
 
-data_file = '/home/chunyu/DTADATA/BindingDB-uniq-data.csv'
+data_file = 'dataset/BindingDB-uniq-data.csv'
 
 all_drug = []
 all_protein = []
