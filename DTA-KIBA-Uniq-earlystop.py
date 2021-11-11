@@ -35,7 +35,7 @@ from keras import backend as K
 import re
 #from multiHead import  SparseSelfAttention
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
@@ -62,7 +62,7 @@ def load_dict(filename_):
     return ret_di
 
 
-# In[ ]:
+# In[2]:
 
 
 all_protein_seqs_emb = []
@@ -77,8 +77,8 @@ for i in range(1,EMB_NO+1):
     else:
         embedding_no = i
 
-    protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_BindingDB-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
-    smiles_seqs_emb = load_dict('dataset/DTADATA/embedding256-12layers/atomwise_BindingDB-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
+    protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_kiba-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
+    smiles_seqs_emb = load_dict('dataset/embedding256-12layers/atomwise_kiba-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
     all_protein_seqs_emb.append(protein_seqs_emb)
     all_smiles_seqs_emb.append(smiles_seqs_emb)
     
@@ -104,7 +104,7 @@ smiles_mean_emb = dict_mean(all_smiles_seqs_emb)
     
 
 
-# In[ ]:
+# In[3]:
 
 
 def cindex_score(y_true, y_pred):
@@ -197,7 +197,7 @@ class DataGenerator(keras.utils.Sequence):
         return input_list ,  y
 
 
-# In[ ]:
+# In[4]:
 
 
 def Highway(value, n_layers, activation="tanh", gate_bias=0):  
@@ -392,7 +392,7 @@ all_r = np.zeros((5,1))
 all_aupr = np.zeros((5,1))
 all_rm2 = np.zeros((5,1))
 
-data_file = 'dataset/BindingDB-uniq-data.csv'
+data_file = 'dataset/kiba-uniq-data.csv'
 
 all_drug = []
 all_protein = []
@@ -433,7 +433,7 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
 #                                        train_drug_cv[train_size-valid_size:], 
 #                                        np.array(train_Y_cv[train_size-valid_size:]),batch_size=batch_size)
 
-    save_model_name = 'models/bdbki-embedding-avg'+str(split)
+    save_model_name = 'models-kiba-u-embedding-avg'+str(split)
     
     model = build_model()
      
@@ -444,7 +444,7 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
                                patience=5,
                                min_lr=0.5e-6)
     model.fit_generator(generator=training_generator,      
-                        epochs = 500 ,
+                        epochs = 350 ,
                         verbose=1,callbacks=[earlyStopping, save_checkpoint])
 
     
