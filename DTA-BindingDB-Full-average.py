@@ -35,7 +35,7 @@ from keras import backend as K
 import re
 #from multiHead import  SparseSelfAttention
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
@@ -77,10 +77,12 @@ for i in range(1,EMB_NO+1):
     else:
         embedding_no = i
 
-    protein_seqs_emb  = load_dict('/home/chunyu/DTADATA/embedding256-12layers/atomwise_kiba-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
-    smiles_seqs_emb = load_dict('/home/chunyu/DTADATA/embedding256-12layers/atomwise_kiba-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
+    protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_BindingDB-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
+    smiles_seqs_emb = load_dict('dataset/embedding256-12layers/atomwise_BindingDB-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
     all_protein_seqs_emb.append(protein_seqs_emb)
     all_smiles_seqs_emb.append(smiles_seqs_emb)
+    del protein_seqs_emb
+    del smiles_seqs_emb
     
 
 def dict_mean(all_emb):
@@ -99,6 +101,12 @@ from collections import Counter
 
 protein_mean_emb = dict_mean(all_protein_seqs_emb)
 smiles_mean_emb = dict_mean(all_smiles_seqs_emb)
+del all_protein_seqs_emb
+del all_smiles_seqs_emb
+# del protein_seqs_emb
+# del smiles_seqs_emb
+# protein_mean_emb =  load_dict('dataset/embedding256/atomwise_BindingDB-full_protein_maxlen1022_dim256.pkl')
+# smiles_mean_emb = load_dict('dataset/embedding256/atomwise_BindingDB-full_smiles_maxlen100_dim256.pkl')
 
    
     
@@ -374,7 +382,7 @@ model = build_model()
 print(model.summary())
 
 
-# In[ ]:
+# In[5]:
 
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping,ReduceLROnPlateau
@@ -392,7 +400,7 @@ all_r = np.zeros((5,1))
 all_aupr = np.zeros((5,1))
 all_rm2 = np.zeros((5,1))
 
-data_file = '/home/chunyu/DTADATA/kiba-full-data.csv'
+data_file = 'dataset/BindingDB-full-data.csv'
 
 all_drug = []
 all_protein = []
@@ -413,11 +421,16 @@ print(len(all_Y), len(all_drug), len(all_protein))
 
 batch_size = 256
 # set random_state as 
-kf = KFold(n_splits=6, shuffle=True)
-for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
-    print(train_index,test_index )
-    if split > 4:
-        break
+for split in range(5):
+    np.random.seed(split)
+    train_size = 101134
+    test_size = 43391
+    valid_size = int(101134*0.1)
+    
+    test_index = np.random.choice( range(train_size+test_size), test_size, replace=False )
+    train_valid_idx = np.setdiff1d(range(train_size+test_size),  test_index ) 
+    valid_idx = np.random.choice( train_valid_idx, valid_size, replace=False )
+    train_index = np.setdiff1d(train_valid_idx,  valid_idx ) 
 
     train_protein_cv = np.array(all_protein)[train_index]
     train_drug_cv = np.array(all_drug)[train_index]
@@ -425,17 +438,24 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
     test_protein_cv = np.array(all_protein)[test_index]
     test_drug_cv = np.array(all_drug)[test_index]
     test_Y_cv = np.array(all_Y)[test_index]
+    
+    
+    valid_protein_cv = np.array(all_protein)[valid_idx]
+    valid_drug_cv = np.array(all_drug)[valid_idx]
+    valid_Y_cv = np.array(all_Y)[valid_idx]
+    
+    
 
     train_size = train_protein_cv.shape[0]  
     
-    valid_size = int(len(all_Y)/6.0) # 7051 #?
-    training_generator = DataGenerator( train_protein_cv[:train_size-valid_size], train_drug_cv[:train_size-valid_size],
-                                       np.array(train_Y_cv[:train_size-valid_size]),batch_size=batch_size)
-    validate_generator = DataGenerator( train_protein_cv[train_size-valid_size:], 
-                                       train_drug_cv[train_size-valid_size:], 
-                                       np.array(train_Y_cv[train_size-valid_size:]),batch_size=batch_size)
+     
+    training_generator = DataGenerator( train_protein_cv , train_drug_cv ,
+                                       np.array(train_Y_cv ),batch_size=batch_size)
+    validate_generator = DataGenerator( valid_protein_cv, 
+                                       valid_drug_cv, 
+                                       np.array(valid_Y_cv),batch_size=batch_size)
 
-    save_model_name = 'models/kiba-full-embedding-avg'+str(split)
+    save_model_name = 'models-bdb-full-avg-embedding'+str(split)
     
     model = build_model()
      
@@ -451,7 +471,7 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
 
     
     model.fit_generator(generator=training_generator,      
-                        epochs = 500 ,
+                        epochs = 1000 ,
                         verbose=1, validation_data=validate_generator,
                         callbacks=[earlyStopping, save_checkpoint])
     
@@ -490,7 +510,7 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
     pearson = get_pearson(test_Y_cv, y_pred[:,0])
     spearman = get_spearman(test_Y_cv, y_pred[:,0])
     rmse = get_rmse(test_Y_cv, y_pred[:,0])
-    aupr = get_aupr(test_Y_cv, y_pred[:,0], threshold=12.1)
+    aupr = get_aupr(test_Y_cv, y_pred[:,0], threshold=7.6)
      
     print('rm2:', rm2)
     print('mse:', mse)
@@ -504,6 +524,9 @@ for split, ( train_index, test_index) in enumerate( kf.split(all_Y)):
     all_aupr[split] = aupr
     all_rm2[split] = rm2
     all_ci2[split] = ci2
+    del input_list
+    del X_prot_seq
+    del X_drug
 
 # In[10]:
 
