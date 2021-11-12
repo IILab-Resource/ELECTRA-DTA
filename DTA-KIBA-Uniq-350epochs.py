@@ -38,7 +38,7 @@ import re
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 config = tf.ConfigProto()
-config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
+config.gpu_options.allow_growth=True
 sess = tf.Session(config=config)
 
 KTF.set_session(sess)
