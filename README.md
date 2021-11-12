@@ -28,6 +28,34 @@ pip install rlscore sklearn tqdm
 git clone https://github.com/IILab-Resource/ELECTRA-DTA
 ```
  
+### Run scripts
+python DTA-BindingDB-Ki.py: this script use the refined BindingDB dataset with average 12 layers electra embedding.
+python DTA-BindingDB-Full-average.py: this script use the original BindingDB dataset with average 12 layers electra embedding.
+python DTA-KIBA-Full.py :  this script use the original BindingDB dataset with average 12 layers electra embedding.
+
+for other dataset and embeddings, please change the dataset path in the python script files.  
+Change the dataset:
+``` 
+data_file = 'dataset/BindingDB-full-data.csv'
+```
+to 
+``` 
+data_file = 'dataset/davis-full-data.csv'
+```
+change the embedding:
+```
+protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_kiba-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
+smiles_seqs_emb = load_dict('dataset/embedding256-12layers/atomwise_kiba-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
+
+```
+to 
+```
+protein_seqs_emb  = load_dict('dataset/embedding256-12layers/atomwise_davis-full_protein_maxlen1022_dim256-layer{}.pkl'.format(embedding_no))
+smiles_seqs_emb = load_dict('dataset/embedding256-12layers/atomwise_davis-full_smiles_maxlen100_dim256-layer{}.pkl'.format(embedding_no))
+
+```
+
+
 ### download dataset
 
 ```
