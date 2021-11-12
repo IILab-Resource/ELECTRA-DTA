@@ -2,7 +2,7 @@
 
 In this github repository, you will see all the source code. However, the
 trained data is too big (total 85G). The entire trained data is in the dataset
-subset of the following url.
+subfolder of the following url.
 
 http://iilab.hit.edu.cn/dtadata/ElectraDTA/ 
 
@@ -10,20 +10,27 @@ http://iilab.hit.edu.cn/dtadata/ElectraDTA/
 
 ### conda environment
 
-: conda create -n ElectraDTA python=3.6
-: conda activate ElectraDTA
+```
+conda create -n ElectraDTA python=3.6
+conda activate ElectraDTA
+```
+### packages
 
-### software 
+```
+pip install tensorflow-gpu==1.14
+pip install keras==2.2.5
+pip install rlscore sklearn tqdm
+``` 
 
-: pip install tensorflow-gpu==1.14
-: pip install keras==2.2.5
-: pip install rlscore sklearn tqdm
- 
 ### clone
 
-: git clone https://github.com/IILab-Resource/ELECTRA-DTA
+```
+git clone https://github.com/IILab-Resource/ELECTRA-DTA
+```
  
 ### download dataset
 
-: cd ELECTRA-DTA
-: wget -np -nH --cut-dirs 2 -r -A .csv,.pkl http://iilab.hit.edu.cn/dtadata/ElectraDTA
+```
+cd ELECTRA-DTA
+wget -np -nH --cut-dirs 2 -r -A .csv,.pkl http://iilab.hit.edu.cn/dtadata/ElectraDTA
+```
